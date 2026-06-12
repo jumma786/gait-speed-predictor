@@ -23,7 +23,7 @@ st.set_page_config(
 )
 
 # ── API URL ────────────────────────────────────────────────────────────────────
-API_URL = "http://localhost:8000"
+API_URL = "https://jummamohammad477-gait-speed-predictor.hf.space"
 
 # ── Header ─────────────────────────────────────────────────────────────────────
 st.title("🦶 Gait Speed Predictor")
