@@ -5,6 +5,25 @@ Predicts walking speed (m/s) from ground reaction force data using machine learn
 
 ---
 
+## Author
+
+**Jumma Mohammad Teli**  
+Data Analyst | ML Engineer — Birmingham, UK  
+[LinkedIn](https://linkedin.com/in/jumma-mohammad) | [GitHub](https://github.com/jumma786) | jummamohammad477@gmail.com
+
+---
+
+## 🚀 Live Demo
+
+| | |
+|---|---|
+| **API (Swagger UI)** | [https://jummamohammad477-gait-speed-predictor.hf.space/docs](https://jummamohammad477-gait-speed-predictor.hf.space/docs) |
+| **Health Check** | [https://jummamohammad477-gait-speed-predictor.hf.space/health](https://jummamohammad477-gait-speed-predictor.hf.space/health) |
+| **Predict Endpoint** | [https://jummamohammad477-gait-speed-predictor.hf.space/predict](https://jummamohammad477-gait-speed-predictor.hf.space/predict) |
+| **Hosted on** | HuggingFace Spaces (Docker) |
+
+---
+
 ## The Business Question
 
 Can biomechanical foot pressure data alone predict how fast someone is walking — without cameras or wearables?
@@ -65,12 +84,15 @@ This makes biomechanical sense: as speed increases, more force is directed forwa
 gait-speed-predictor/
 │
 ├── data/
-│   ├── raw/                        # Raw GaitPhase CSVs (not in repo)
 │   └── processed/
 │       ├── features.csv            # Step-level features from preprocessor
 │       ├── model_features.csv      # Engineered features for modelling
 │       ├── model_results.csv       # LOSO CV results for all models
 │       └── plots/                  # Evaluation and SHAP plots
+│           ├── actual_vs_predicted.png
+│           ├── residuals.png
+│           ├── shap_summary.png
+│           └── shap_dependence_step_freq_mean.png
 │
 ├── src/
 │   ├── data_loader.py              # Load and parse raw CSVs
@@ -91,6 +113,8 @@ gait-speed-predictor/
 │   ├── test_features.py            # 14 feature engineering tests
 │   └── test_model.py               # 12 model tests
 │
+├── app.py                          # Streamlit demo app
+├── Dockerfile                      # HuggingFace Spaces deployment
 ├── .github/workflows/ci.yml        # GitHub Actions CI
 ├── requirements.txt
 └── README.md
@@ -114,41 +138,6 @@ gait-speed-predictor/
 
 ---
 
-## Reproducing the Results
-
-### 1. Install dependencies
-```bash
-conda create -n gait python=3.11
-conda activate gait
-pip install -r requirements.txt
-```
-
-### 2. Download the dataset
-Place raw CSVs in `data/raw/` following the naming convention:  
-`GP{subject}_{speed}_force.csv`, `GP{subject}_{speed}_marker.csv`
-
-### 3. Run the pipeline
-```bash
-python src/preprocessor.py       # Extract step features → data/processed/features.csv
-python src/feature_engineering.py # Engineer features → data/processed/model_features.csv
-python src/train.py               # Train models → api/model/xgb_speed_model.pkl
-python src/evaluate.py            # SHAP plots → data/processed/plots/
-```
-
-### 4. Run the API
-```bash
-uvicorn api.main:app --reload --port 8000
-```
-Swagger UI: http://localhost:8000/docs
-
-### 5. Run tests
-```bash
-pytest tests/ -v
-```
-Expected: **42 passed**
-
----
-
 ## API Endpoints
 
 | Method | Endpoint | Description |
@@ -159,7 +148,7 @@ Expected: **42 passed**
 
 ### Example request
 ```bash
-curl -X POST http://localhost:8000/predict \
+curl -X POST https://jummamohammad477-gait-speed-predictor.hf.space/predict \
   -H "Content-Type: application/json" \
   -d '{"step_freq_mean": 1.414, "vgrf_to_ap_left": 8.69, ...}'
 ```
@@ -177,9 +166,57 @@ curl -X POST http://localhost:8000/predict \
 
 ---
 
+## Reproducing the Results
+
+### 1. Install dependencies
+```bash
+conda create -n gait python=3.11
+conda activate gait
+pip install -r requirements.txt
+```
+
+### 2. Download the dataset
+Place raw CSVs in `data/raw/` following the naming convention:  
+`GP{subject}_{speed}_force.csv`, `GP{subject}_{speed}_marker.csv`
+
+### 3. Run the pipeline
+```bash
+python src/preprocessor.py
+python src/feature_engineering.py
+python src/train.py
+python src/evaluate.py
+```
+
+### 4. Run the API locally
+```bash
+uvicorn api.main:app --reload --port 8000
+```
+
+### 5. Run the Streamlit app locally
+```bash
+streamlit run app.py
+```
+
+### 6. Run tests
+```bash
+pytest tests/ -v
+```
+Expected: **42 passed**
+
+---
+
+## Deployment
+
+| Service | Platform | URL |
+|---------|----------|-----|
+| FastAPI | HuggingFace Spaces (Docker) | [Live API](https://jummamohammad477-gait-speed-predictor.hf.space/docs) |
+| Streamlit | Local / Streamlit Cloud | `streamlit run app.py` |
+
+---
+
 ## Stack
 
-Python · Scikit-learn · XGBoost · SHAP · FastAPI · Pydantic · Pandas · NumPy · Matplotlib · Pytest · GitHub Actions
+Python · Scikit-learn · XGBoost · SHAP · FastAPI · Pydantic · Pandas · NumPy · Matplotlib · Plotly · Streamlit · Docker · Pytest · GitHub Actions · HuggingFace Spaces
 
 ---
 
