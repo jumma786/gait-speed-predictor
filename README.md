@@ -210,8 +210,7 @@ Expected: **42 passed**
 | Service | Platform | URL |
 |---------|----------|-----|
 | FastAPI | HuggingFace Spaces (Docker) | [Live API](https://jummamohammad477-gait-speed-predictor.hf.space/docs) |
-| Streamlit | Local / Streamlit Cloud | `streamlit run app.py` |
-
+| Streamlit | Streamlit Community Cloud | [Live App](https://jumma786-gait-speed-predictor.streamlit.app) |
 ---
 
 ## Stack
