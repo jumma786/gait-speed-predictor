@@ -274,5 +274,5 @@ with st.expander("ℹ️ About this model"):
     > *Contrary to expectation, step frequency alone does not drive predictions —  
     the balance between vertical loading and forward propulsion is the strongest signal.*
     
-    [GitHub](https://github.com/jumma786/gait-speed-predictor) | [API Docs](http://localhost:8000/docs)
+    [GitHub](https://github.com/jumma786/gait-speed-predictor) | [API Docs](https://jummamohammad477-gait-speed-predictor.hf.space/docs)
     """)
