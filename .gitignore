@@ -1,0 +1,10 @@
+data/raw/
+data/processed/features.csv
+data/processed/model_features.csv
+data/processed/model_results.csv
+data/processed/plots/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+.env
