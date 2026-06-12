@@ -22,12 +22,6 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Train model for CI
-        run: python src/train.py
-        env:
-          DATA_PATH: data/processed/model_features.csv
-          MODEL_SAVE_PATH: api/model/xgb_speed_model.pkl
-
       - name: Run tests
         run: pytest tests/ -v --tb=short
 
