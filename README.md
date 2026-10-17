@@ -1,7 +1,7 @@
 # Gait Speed Predictor
 
 Predicts walking speed (m/s) from ground reaction force data using machine learning.  
-**Random Forest | MAE: 0.057 m/s | R²: 0.958 | 42 tests passing | FastAPI served**
+**Best model: Random Forest (MAE 0.057 m/s, R² 0.958) | Served model: XGBoost (MAE 0.058 m/s, R² 0.956) | 42 tests passing | FastAPI served**
 
 ---
 
@@ -44,7 +44,9 @@ Rehabilitation clinics and sports science labs rely on expensive infrared motion
 
 Validation: **Leave-One-Subject-Out cross-validation** (21 folds) — each fold trains on 20 subjects and tests on one unseen subject. This is the gold-standard approach for gait ML to ensure the model generalises to new individuals.
 
-**Headline:** Random Forest predicts walking speed within ±0.057 m/s — an 81% improvement over baseline.
+**Headline:** Random Forest predicts walking speed on unseen participants with a mean absolute error of 0.057 m/s, 81% lower than the baseline. Ridge regression and XGBoost are almost as accurate (0.058 m/s), so a simple linear model captures most of the signal.
+
+**Unit of analysis:** step-level force features are averaged per participant per speed, giving 252 rows (21 participants × 12 speeds). The deployed API serves the XGBoost pipeline (`api/model/xgb_speed_model.pkl`).
 
 ---
 
@@ -60,15 +62,15 @@ This makes biomechanical sense: as speed increases, more force is directed forwa
 1. `vgrf_to_ap_left` — vertical-to-propulsive force ratio, left foot
 2. `vgrf_to_ap_right` — vertical-to-propulsive force ratio, right foot
 3. `stance_duration_ms_left` — how long left foot is on the ground
-4. `step_freq_left` — left foot step frequency
-5. `step_freq_mean` — bilateral mean step frequency
+4. `step_freq_left` — left-foot step-frequency proxy (1000 / stance duration in ms)
+5. `step_freq_mean` — bilateral mean of the step-frequency proxy
 
 ---
 
 ## Dataset
 
 **GaitPhase Database** — Hebenstreit et al. (2014), FAU Erlangen-Nürnberg  
-- 21 healthy subjects (20 included; subject 4 excluded — incomplete protocol)
+- 21 healthy young adults (subject IDs GP1–GP22; GP4 is not in the released data because the protocol was incomplete)
 - Walking on split-belt treadmill at 12 speeds: 0.6–1.7 m/s
 - Ground reaction forces sampled at 1000 Hz
 - 3D marker positions sampled at 200 Hz
@@ -110,8 +112,8 @@ gait-speed-predictor/
 ├── tests/
 │   ├── conftest.py
 │   ├── test_api.py                 # 17 API endpoint tests
-│   ├── test_features.py            # 14 feature engineering tests
-│   └── test_model.py               # 12 model tests
+│   ├── test_features.py            # 15 feature engineering tests
+│   └── test_model.py               # 10 model tests
 │
 ├── app.py                          # Streamlit demo app
 ├── Dockerfile                      # HuggingFace Spaces deployment
@@ -131,7 +133,7 @@ gait-speed-predictor/
 | Bilateral force (left/right) | Peak VGRF, mean VGRF, impulse, loading rate, stance duration, AP/ML forces | 18 |
 | Asymmetry indices | Left-right asymmetry % for key features | 5 |
 | Bilateral ratios | Left/right dominance ratios | 7 |
-| Step frequency | Steps per second proxies | 3 |
+| Step-frequency proxy | 1000 / stance duration (inverse stance time) | 3 |
 | Force balance | Vertical-to-horizontal ratios | 4 |
 | Impulse efficiency | Impulse per millisecond of contact | 2 |
 | Composite | Mean bilateral, combined asymmetry score | 6 |
@@ -157,9 +159,9 @@ curl -X POST https://jummamohammad477-gait-speed-predictor.hf.space/predict \
 ```json
 {
   "predicted_speed_ms": 1.1907,
-  "confidence_lower": 1.109,
-  "confidence_upper": 1.273,
-  "model": "Random Forest",
+  "confidence_lower": 1.106,
+  "confidence_upper": 1.276,
+  "model": "XGBoost",
   "note": "Prediction based on force plate biomechanical features only."
 }
 ```
@@ -228,4 +230,13 @@ Hebenstreit, F., Leibold, A., Krinner, S., Welsch, G., Lochmann, M., & Eskofier,
 
 ## Related Work
 
-This project extends [GaitSync](https://github.com/jumma786/gaitsync-gait-analysis-ml) — my MSc dissertation at Queen Mary University of London (2023–2024) — which used the same sensor modality for gait phase classification and movement-abnormality detection.
+This project extends [GaitSync](https://github.com/jumma786/gaitsync-gait-analysis-ml) — my MSc dissertation at Queen Mary University of London (2023–2024) — which classified walking speed from the same database's **optical motion-capture marker** data using a random frame-level split. This project uses the **force-plate** data instead and validates on unseen participants (leave-one-subject-out), addressing the main limitation of the MSc work.
+
+---
+
+## Limitations
+
+- 21 healthy young adults walking on a treadmill at fixed belt speeds: an easier problem than free walking, and not representative of clinical populations.
+- Only 252 trial-level rows; errors vary across participants (MAE standard deviation about 0.026 m/s).
+- The API's `confidence_lower` / `confidence_upper` band is a fixed ±0.085 m/s (XGBoost LOSO MAE + 1 SD), not a calibrated or conformal prediction interval.
+- SHAP values describe what the model relies on, not causal effects, and several ratio features are correlated.

@@ -29,8 +29,8 @@ app = FastAPI(
     title="Gait Speed Predictor API",
     description=(
         "Predicts walking speed (m/s) from ground reaction force features. "
-        "Model: Random Forest trained on GaitPhase dataset (Hebenstreit et al. 2014). "
-        "Validation: Leave-One-Subject-Out CV | MAE: 0.057 m/s | R²: 0.958"
+        "Model: XGBoost pipeline trained on GaitPhase dataset (Hebenstreit et al. 2014). "
+        "Validation: Leave-One-Subject-Out CV | MAE: 0.058 m/s | R²: 0.956"
     ),
     version="1.0.0",
 )
@@ -91,15 +91,15 @@ def predict(request: PredictRequest):
         # Clip to valid protocol range
         predicted_speed = np.clip(predicted_speed, 0.4, 2.0)
 
-        # Confidence band based on LOSO MAE ± 1 std
-        lower = round(max(0.4, predicted_speed - 0.082), 3)
-        upper = round(min(2.0, predicted_speed + 0.082), 3)
+        # Fixed band = XGBoost LOSO MAE + 1 std (0.058 + 0.027); not a calibrated interval
+        lower = round(max(0.4, predicted_speed - 0.085), 3)
+        upper = round(min(2.0, predicted_speed + 0.085), 3)
 
         return PredictResponse(
             predicted_speed_ms=round(predicted_speed, 4),
             confidence_lower=lower,
             confidence_upper=upper,
-            model="Random Forest",
+            model="XGBoost",
             note="Prediction based on force plate biomechanical features only."
         )
 
