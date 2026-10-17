@@ -29,7 +29,7 @@ API_URL = "https://jummamohammad477-gait-speed-predictor.hf.space"
 st.title("🦶 Gait Speed Predictor")
 st.markdown(
     "Predicts walking speed (m/s) from ground reaction force data. "
-    "**Random Forest | MAE: 0.057 m/s | R²: 0.958 | LOSO Cross-Validation**"
+    "**XGBoost | MAE: 0.058 m/s | R²: 0.956 | LOSO Cross-Validation** (best model: Random Forest, MAE 0.057 m/s)"
 )
 st.divider()
 
@@ -265,9 +265,9 @@ else:
 st.divider()
 with st.expander("ℹ️ About this model"):
     st.markdown("""
-    **Model:** Random Forest (200 trees, max_depth=6)  
+    **Served model:** XGBoost pipeline (200 trees, max_depth=4)  
     **Validation:** Leave-One-Subject-Out CV (21 folds)  
-    **MAE:** 0.057 m/s | **R²:** 0.958  
+    **MAE:** 0.058 m/s | **R²:** 0.956 (Random Forest: 0.057 m/s, 0.958)  
     **Dataset:** GaitPhase Database — Hebenstreit et al. (2014), FAU Erlangen-Nürnberg  
     **Top predictive feature:** Vertical-to-anterior force ratio (vgrf_to_ap_left)  
     

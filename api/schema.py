@@ -126,7 +126,7 @@ class PredictResponse(BaseModel):
     predicted_speed_ms: float = Field(..., example=1.15)
     confidence_lower: float = Field(..., example=1.07)
     confidence_upper: float = Field(..., example=1.23)
-    model: str = Field(..., example="Random Forest")
+    model: str = Field(..., example="XGBoost")
     note: str
 
 
